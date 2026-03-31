@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "setur",
+  "version": "0.1.0",
+  "identifier": "com.user.setur",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "trayIcon": {
+      "id": "main-tray",
+      "iconPath": "icons/32x32.png"
+    },
+    "windows": [
+      {
+        "label": "boot",
+        "title": "Boot",
+        "width": 400,
+        "height": 300,
+        "center": true,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "resizable": false
+      },
+      {
+        "label": "main",
+        "title": "setur",
+        "width": 800,
+        "height": 600,
+        "visible": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
