@@ -122,8 +122,10 @@ mod commands {
         // Launch Apps
         for app in &preset.apps {
             let result = if cfg!(target_os = "windows") {
+                use std::os::windows::process::CommandExt;
                 Command::new("cmd")
                     .args(["/C", "start", "", &app.path])
+                    .creation_flags(0x08000000) // CREATE_NO_WINDOW
                     .spawn()
             } else {
                 Command::new("open").arg(&app.path).spawn()
@@ -334,6 +336,11 @@ pub fn run() {
                         }
                     }
                 });
+            }
+
+            if let Some(boot_window) = app.get_webview_window("boot") {
+                let _ = boot_window.show();
+                let _ = boot_window.set_focus();
             }
 
             #[cfg(target_os = "windows")]
