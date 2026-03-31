@@ -276,19 +276,6 @@ cargo test launcher
 
 ---
 
-## Roadmap
-
-- [x] Core boot launcher & preset management
-- [x] App scanning from Start Menu & Program Files
-- [x] AI-assisted preset suggestions
-- [x] Tray integration
-- [ ] Preset hotkeys (e.g., `Ctrl+Alt+1` to launch preset 1)
-- [ ] Preset scheduling (e.g., "Open at 9 AM")
-- [ ] Cloud sync (future)
-- [ ] macOS / Linux support (future)
-
----
-
 ## Known Issues & Limitations
 
 - **Windows Only:** Currently targets Windows 10/11 exclusively
@@ -298,28 +285,9 @@ cargo test launcher
 
 ---
 
-## Contributing
-
-Contributions are welcome! Please open an issue or PR. Here's how:
-
-1. **Fork** the repo
-2. **Create a branch:** `git checkout -b feature/my-feature`
-3. **Commit:** `git commit -m "Add my feature"`
-4. **Push:** `git push origin feature/my-feature`
-5. **Open a PR**
-
-### Development Guidelines
-
-- Keep Rust changes focused; use `cargo fmt` and `cargo clippy`
-- Keep React changes in line with existing Tailwind setup
-- Add tests for new backend features
-- Update README if adding new user-facing features
-
----
-
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+MIT License.
 
 ---
 
@@ -353,7 +321,6 @@ Preset AI suggestions powered by [Gemini](https://gemini.google.com/).
 <div align="center">
 
 **Made by [Reyansh Aggarwal](https://github.com/reyansh-aggarwal)**
-
-[⭐ Star on GitHub](https://github.com/reyansh-aggarwal/setur) | [📧 Email](mailto:reyanshagg09@gmail.com)
+[📧 Email](mailto:reyanshagg09@gmail.com)
 
 </div>
