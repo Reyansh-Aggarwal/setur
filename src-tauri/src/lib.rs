@@ -6,6 +6,9 @@ use tauri::tray::TrayIconEvent;
 use tauri::{AppHandle, Manager};
 use walkdir::WalkDir;
 
+#[cfg(target_os = "windows")]
+use winreg::{enums::*, RegKey};
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AppEntry {
     pub name: String,
@@ -185,7 +188,30 @@ mod commands {
                             .unwrap_or("Unknown")
                             .to_string();
                         let file_path = entry.path().to_string_lossy().to_string();
+                        // Skip common junk executables
+                        let skip_keywords = [
+                            "uninstall",
+                            "helper",
+                            "updater",
+                            "crash",
+                            "reporter",
+                            "setup",
+                            "install",
+                            "update",
+                            "service",
+                            "daemon",
+                            "agent",
+                            "notif",
+                            "notify",
+                            "elevate",
+                            "x86",
+                            "x64",
+                        ];
 
+                        let name_lower = name.to_lowercase();
+                        if skip_keywords.iter().any(|k| name_lower.contains(k)) {
+                            continue;
+                        }
                         apps.push(AppInfo {
                             name,
                             path: file_path,
@@ -210,6 +236,29 @@ mod commands {
                             .and_then(|s| s.to_str())
                             .unwrap_or("Unknown")
                             .to_string();
+
+                        let name_lower = name.to_lowercase();
+                        let skip_keywords = [
+                            "uninstall",
+                            "helper",
+                            "updater",
+                            "crash",
+                            "reporter",
+                            "setup",
+                            "install",
+                            "update",
+                            "service",
+                            "daemon",
+                            "agent",
+                            "notif",
+                            "notify",
+                            "elevate",
+                        ];
+
+                        if name.len() < 4 || skip_keywords.iter().any(|&k| name_lower.contains(k)) {
+                            continue;
+                        }
+
                         let file_path = entry.path().to_string_lossy().to_string();
 
                         apps.push(AppInfo {
@@ -287,6 +336,32 @@ pub fn run() {
                 });
             }
 
+            #[cfg(target_os = "windows")]
+            {
+                let run_key = RegKey::predef(HKEY_CURRENT_USER).open_subkey_with_flags(
+                    "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+                    KEY_READ | KEY_WRITE,
+                );
+
+                match run_key {
+                    Ok(key) => {
+                        let app_name = "Setur";
+                        if key.get_value::<String, _>(app_name).is_err() {
+                            if let Ok(exe_path) = std::env::current_exe() {
+                                if let Err(e) =
+                                    key.set_value(app_name, &exe_path.to_string_lossy().to_string())
+                                {
+                                    eprintln!("Failed to write autostart registry key: {}", e);
+                                }
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("Failed to open autostart registry key: {}", e);
+                    }
+                }
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -300,10 +375,25 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
-        .run(|_app_handle, event| match event {
+        .run(|app_handle, event| match event {
             tauri::RunEvent::ExitRequested { api, .. } => {
                 api.prevent_exit();
             }
+            tauri::RunEvent::WindowEvent { label, event, .. } => {
+                if label == "main" {
+                    if let tauri::WindowEvent::CloseRequested { .. } = event {
+                        // Only quit if boot window is hidden or not visible
+                        let boot_visible = app_handle
+                            .get_webview_window("boot")
+                            .and_then(|w| w.is_visible().ok())
+                            .unwrap_or(false);
+
+                        if !boot_visible {
+                            std::process::exit(0);
+                        }
+                    }
+                }
+            }
             _ => {}
-        });
+        })
 }
