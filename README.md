@@ -180,7 +180,7 @@ setur/
 
 ### Presets File
 
-Presets are stored in `%APPDATA%\Setur\presets.json`:
+Presets are stored in `AppData\Roaming\com.reyansh.setur\presets.json`:
 
 ```json
 {
