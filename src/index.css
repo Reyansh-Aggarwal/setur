@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-shell: #0f0e0d;
+  --color-bg-surface: #141312;
+  --color-bg-raised: #1a1814;
+  --color-border: rgba(255, 255, 255, 0.06);
+
+  --color-text-primary: #d4d1ca;
+  --color-text-secondary: #6a6763;
+  --color-text-muted: #3a3835;
+
+  --color-accent-green: #4aad6a;
+  --color-accent-blue: #5a8ad4;
+  --color-accent-amber: #c4883a;
+  --color-accent-purple: #9a6ac8;
+  
+  --color-danger: #E5534B;
+}
+
+:root {
+  /* CSS Variables for use in styles */
+  --bg-shell: #0f0e0d;
+  --bg-surface: #141312;
+  --bg-raised: #1a1814;
+  --border: rgba(255, 255, 255, 0.06);
+
+  --text-primary: #d4d1ca;
+  --text-secondary: #6a6763;
+  --text-muted: #3a3835;
+
+  --accent-green: #4aad6a;
+  --accent-blue: #5a8ad4;
+  --accent-amber: #c4883a;
+  --accent-purple: #9a6ac8;
+  
+  --danger: #E5534B;
+}
+
+/* Global resets and base styles */
+html,
+body,
+#root {
+  background: var(--bg-shell);
+  color: var(--text-primary);
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* Utility classes */
+.surface {
+  background: var(--bg-surface);
+  border: 0.5px solid var(--border);
+  border-radius: 8px;
+}
+
+.surface-raised {
+  background: var(--bg-raised);
+  border: 0.5px solid var(--border);
+  border-radius: 8px;
+}
+
+/* Global transitions and focus rings */
+button,
+[role="button"],
+a,
+input {
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+
+*:focus-visible {
+  outline: 1.5px solid rgba(74, 173, 106, 0.4);
+  outline-offset: 2px;
+}
+
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Entrance animation */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

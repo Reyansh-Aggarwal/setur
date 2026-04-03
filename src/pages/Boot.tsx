@@ -5,28 +5,13 @@ import type { Preset } from "../types/presets";
 
 /* ─── tiny icons ─────────────────────────────────────────────────────────── */
 
-function DefaultIcon() {
+function SeturLogo() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className="w-10 h-10 text-zinc-400"
-      stroke="currentColor"
-      strokeWidth={1.5}
-    >
-      <rect x="3" y="3" width="8" height="8" rx="1.5" />
-      <rect x="13" y="3" width="8" height="8" rx="1.5" />
-      <rect x="3" y="13" width="8" height="8" rx="1.5" />
-      <rect x="13" y="13" width="8" height="8" rx="1.5" />
-    </svg>
-  );
-}
-
-function SettingsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" stroke="currentColor" strokeWidth={1.8}>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="1" width="6" height="6" rx="1.5" fill="#5a5855" />
+      <rect x="9" y="1" width="6" height="6" rx="1.5" fill="#5a5855" />
+      <rect x="1" y="9" width="6" height="6" rx="1.5" fill="#5a5855" />
+      <rect x="9" y="9" width="6" height="6" rx="1.5" fill="#2e2c28" />
     </svg>
   );
 }
@@ -46,9 +31,9 @@ function Toast({ message, onDone }: ToastProps) {
 
   return (
     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 animate-[fadeSlideUp_0.25s_ease-out]">
-      <div className="flex items-start gap-2 bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs rounded-lg px-3 py-2 shadow-xl max-w-xs">
-        <span className="mt-0.5 text-amber-400 shrink-0">⚠</span>
-        <span>Failed to launch: <span className="font-medium text-white">{message}</span></span>
+      <div className="flex items-start gap-2 bg-[#181614] border border-[#2e2c28] text-text-secondary text-xs rounded-[8px] px-3 py-2 shadow-xl max-w-xs">
+        <span className="mt-0.5 text-[#E5534B] shrink-0">⚠</span>
+        <span>Failed to launch: <span className="font-medium text-[#d4d1ca]">{message}</span></span>
       </div>
     </div>
   );
@@ -60,54 +45,58 @@ interface CardProps {
   preset: Preset;
   loading: boolean;
   onClick: () => void;
+  accentColor: string;
 }
 
-function PresetCard({ preset, loading, onClick }: CardProps) {
+function PresetCard({ preset, loading, onClick, accentColor }: CardProps) {
+  const itemCount = preset.apps.length + preset.urls.length;
+
   return (
-    <button
+    <div
+      role="button"
       onClick={onClick}
-      disabled={loading}
-      className={[
-        "group relative flex flex-col items-center justify-center gap-3",
-        "w-full aspect-square rounded-xl border border-zinc-800",
-        "bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-600",
-        "transition-all duration-150 ease-out",
-        "disabled:opacity-40 disabled:cursor-not-allowed",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/70",
-      ].join(" ")}
+      className={
+        "group relative flex items-center gap-[10px] w-full cursor-pointer " +
+        "rounded-[9px] bg-[#181614] border-[0.5px] border-[#252320] px-[12px] py-[10px] " +
+        "overflow-hidden transition-all duration-150 ease-out " +
+        "hover:bg-[#1e1c1a] hover:border-[#383430] " +
+        (loading ? "opacity-50 pointer-events-none" : "")
+      }
     >
-      {/* shimmer overlay while launching */}
-      {loading && (
-        <div className="absolute inset-0 rounded-xl overflow-hidden">
-          <div className="absolute inset-0 animate-[shimmer_1.2s_linear_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full" />
-        </div>
-      )}
+      {/* Accent strip on hover */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-[2px] opacity-0 group-hover:opacity-100 transition-opacity"
+        style={{ backgroundColor: accentColor }}
+      />
 
-      {/* icon */}
-      <div className="flex items-center justify-center w-12 h-12">
-        {preset.icon ? (
-          <img
-            src={preset.icon}
-            alt={preset.name}
-            className="w-10 h-10 object-contain rounded"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
-              (e.target as HTMLImageElement).nextElementSibling?.removeAttribute("style");
-            }}
-          />
-        ) : null}
-        <span style={{ display: preset.icon ? "none" : undefined }}>
-          <DefaultIcon />
-        </span>
-      </div>
+      {/* 7x7 circle */}
+      <div
+        className="shrink-0 rounded-full w-[7px] h-[7px]"
+        style={{
+          backgroundColor: accentColor,
+          boxShadow: `0 0 6px ${accentColor}66` // 40% opacity hex is 66
+        }}
+      />
 
-      {/* name */}
-      <span className="text-zinc-200 text-xs font-medium leading-tight text-center px-1 line-clamp-2 group-hover:text-white transition-colors">
+      {/* Name */}
+      <span className="text-[13px] font-medium text-[#d0cdc6] truncate">
         {preset.name}
       </span>
-    </button>
+
+      <div className="flex-1" />
+
+      {/* Count */}
+      <span className="text-[11px] text-[#3e3c39] whitespace-nowrap">
+        {itemCount} {itemCount === 1 ? 'item' : 'items'}
+      </span>
+
+      {/* Chevron */}
+      <span className="text-[13px] text-[#2e2c29] leading-none shrink-0 relative top-[0.5px] ml-1">›</span>
+    </div>
   );
 }
+
+const ACCENT_COLORS = ["#4aad6a", "#5a8ad4", "#c4883a", "#9a6ac8"];
 
 /* ─── Boot Page ───────────────────────────────────────────────────────────── */
 
@@ -118,26 +107,69 @@ export default function Boot() {
   const [toast, setToast] = useState<string | null>(null);
   const clearToast = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /* ── load presets on mount ─────────────────────────────────────────────── */
-  useEffect(() => {
-    const checkFirstLaunch = async () => {
-      try {
-        const isFirst = await invoke<boolean>("is_first_launch");
-        if (isFirst) {
-          openMain();
-          return;
-        }
-
-        const data = await invoke<Preset[]>("load_presets");
-        setPresets(data);
-        setStatus("ready");
-      } catch {
-        setStatus("error");
+  /* ─── load presets on mount ─────────────────────────────────────────────── */
+  const loadPresets = async () => {
+    try {
+      const isFirst = await invoke<boolean>("is_first_launch");
+      if (isFirst) {
+        openMain();
+        return;
       }
+
+      const data = await invoke<Preset[]>("load_presets");
+      setPresets(data);
+      setStatus("ready");
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  useEffect(() => {
+    loadPresets();
+  }, []);
+
+  /* ── refresh on window show ────────────────────────────────────────────── */
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+
+    const setupListener = async () => {
+      const win = await getCurrentWindow();
+      unlisten = await win.listen("tauri://window-shown", () => {
+        loadPresets();
+      });
     };
 
-    checkFirstLaunch();
+    setupListener();
+    return () => {
+      if (unlisten) unlisten();
+    };
   }, []);
+
+
+  /* ── dynamic resize effect ────────────────────────────────────────────── */
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (status === "ready") {
+      const resize = async () => {
+        if (containerRef.current) {
+          try {
+            const { LogicalSize } = await import("@tauri-apps/api/window");
+            const height = containerRef.current.scrollHeight;
+            const win = await getCurrentWindow();
+            await win.setSize(new LogicalSize(360, height));
+          } catch (e) {
+            console.error("Resize failed:", e);
+          }
+        }
+      };
+
+      resize(); // Immediate pass
+      const t1 = setTimeout(resize, 200);
+      const t2 = setTimeout(resize, 600);
+      return () => { clearTimeout(t1); clearTimeout(t2); };
+    }
+  }, [status, presets]);
 
   /* ── helpers ───────────────────────────────────────────────────────────── */
   const selfHide = async () => {
@@ -158,6 +190,7 @@ export default function Boot() {
     }
     await selfHide();
   };
+
   const showToast = (msg: string) => {
     if (clearToast.current) clearTimeout(clearToast.current);
     setToast(msg);
@@ -183,76 +216,97 @@ export default function Boot() {
   };
 
   /* ── render ────────────────────────────────────────────────────────────── */
+
+  const hour = new Date().getHours();
+  let greeting = "Good evening";
+  if (hour < 12) greeting = "Good morning";
+  else if (hour < 18) greeting = "Good afternoon";
+
   return (
     <div
-      // drag region covers the whole window (borderless)
+      ref={containerRef}
       data-tauri-drag-region
-      className="relative flex flex-col w-screen h-screen bg-zinc-950 text-white select-none overflow-hidden"
+      className="relative flex flex-col w-[360px] bg-[#0f0e0d] border-[0.5px] border-[#2e2c28] rounded-[14px] p-[26px_22px_16px] gap-4 font-sans select-none opacity-0 animate-[fadeUp_0.18s_ease_forwards]"
     >
-      {/* ── header ── */}
-      <div
-        data-tauri-drag-region
-        className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0"
-      >
-        <span className="text-xs font-semibold tracking-widest text-zinc-500 uppercase">
-          Setur
-        </span>
+      {/* Header row */}
+      <div data-tauri-drag-region className="flex items-center gap-[10px]">
+        <div className="flex items-center justify-center w-[30px] h-[30px] shrink-0 bg-[#1e1d1b] border-[0.5px] border-[#333028] rounded-[8px]">
+          <SeturLogo />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[13px] font-medium text-[#d4d1ca] leading-tight">Setur</span>
+          <span className="text-[11px] text-[#52504c]">{greeting}</span>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="w-full border-t-[0.5px] border-[#222120]" />
+
+      {/* List area */}
+      <div className="flex flex-col">
+        <p className="text-[12px] text-[#6a6763] mb-[10px]">What are you working on today?</p>
+
+        {status === "loading" && (
+          <div className="py-4 text-center text-[12px] text-[#52504c]">Loading...</div>
+        )}
+        {status === "error" && (
+          <div className="py-4 text-center text-[12px] text-[#E5534B]">Failed to load presets</div>
+        )}
+        {status === "ready" && (
+          <div className="flex flex-col gap-2">
+            {presets.map((preset, idx) => (
+              <PresetCard
+                key={preset.id}
+                preset={preset}
+                loading={launchingId === preset.id}
+                onClick={() => handleLaunch(preset)}
+                accentColor={preset.color || ACCENT_COLORS[idx % ACCENT_COLORS.length]}
+              />
+            ))}
+            {presets.length === 0 && (
+              <div className="py-4 text-center text-[12px] text-[#52504c]">
+                No presets found. <span className="cursor-pointer text-[#4aad6a] hover:underline" onClick={openMain}>Create one</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between mt-1">
+        <button
+          onClick={selfHide}
+          className="text-[12px] text-[#3a3835] hover:text-[#6a6763] transition-[color] duration-100 bg-transparent border-none p-0 cursor-pointer outline-none shrink-0"
+        >
+          Skip for now
+        </button>
 
         <div className="flex items-center gap-1.5">
           <button
             onClick={openMain}
-            title="Settings"
-            className="flex items-center gap-1 text-zinc-500 hover:text-zinc-200 text-xs px-2 py-1 rounded-md hover:bg-zinc-800 transition-all"
+            className="flex items-center gap-[5px] text-[12px] text-[#4a4845] px-[8px] py-[5px] border-[0.5px] border-[#222120] rounded-[6px] bg-[#111010] hover:border-[#3a3835] hover:text-[#7a7673] transition-[background-color,border-color,color] duration-100 cursor-pointer outline-none shrink-0"
           >
-            <SettingsIcon />
-            <span>Settings</span>
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" />
+              <rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" />
+              <rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" />
+              <rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity="0.4" />
+            </svg>
+            Manage
           </button>
 
           <button
-            onClick={selfHide}
-            title="Skip"
-            className="text-zinc-600 hover:text-zinc-300 text-xs px-2 py-1 rounded-md hover:bg-zinc-800 transition-all"
+            onClick={() => presets.length > 0 && handleLaunch(presets[0])}
+            disabled={presets.length === 0 || status !== "ready"}
+            className="text-[12px] text-[#52504c] hover:border-[#3a3835] hover:text-[#d4d1ca] transition-[background-color,border-color,color] duration-100 bg-[#161412] border-[0.5px] border-[#272522] rounded-[6px] px-[9px] py-[6px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed outline-none shrink-0"
           >
-            Skip
+            ↺ Same as yesterday
           </button>
         </div>
       </div>
 
-      {/* ── body ── */}
-      <div className="flex-1 px-4 pb-4 overflow-y-auto">
-        {status === "loading" && (
-          <div className="flex items-center justify-center h-full">
-            <div className="w-5 h-5 rounded-full border-2 border-zinc-700 border-t-indigo-500 animate-spin" />
-          </div>
-        )}
-
-        {status === "error" && (
-          <div className="flex items-center justify-center h-full text-zinc-500 text-sm">
-            Failed to load presets.
-          </div>
-        )}
-
-        {status === "ready" && presets.length > 0 && (
-          <>
-            <p className="text-xs text-zinc-500 mb-3">Choose a preset to launch</p>
-            <div className="grid grid-cols-3 gap-2">
-              {presets.map((preset) => (
-                <PresetCard
-                  key={preset.id}
-                  preset={preset}
-                  loading={launchingId === preset.id}
-                  onClick={() => handleLaunch(preset)}
-                />
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* ── toast ── */}
-      {toast && (
-        <Toast message={toast} onDone={() => setToast(null)} />
-      )}
+      {/* Toast */}
+      {toast && <Toast message={toast} onDone={() => setToast(null)} />}
     </div>
   );
 }

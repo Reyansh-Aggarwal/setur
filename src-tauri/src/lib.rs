@@ -19,7 +19,7 @@ pub struct AppEntry {
 pub struct Preset {
     pub id: String,
     pub name: String,
-    pub icon: Option<String>,
+    pub color: Option<String>,
     pub apps: Vec<AppEntry>,
     pub urls: Vec<String>,
 }
@@ -43,6 +43,20 @@ fn get_presets_path(app_handle: &AppHandle) -> Result<PathBuf, String> {
     }
 
     path.push("presets.json");
+    Ok(path)
+}
+
+fn get_settings_path(app_handle: &AppHandle) -> Result<PathBuf, String> {
+    let mut path = app_handle
+        .path()
+        .app_data_dir()
+        .map_err(|e| e.to_string())?;
+
+    if !path.exists() {
+        fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+    }
+
+    path.push("settings.json");
     Ok(path)
 }
 
@@ -109,18 +123,11 @@ mod commands {
         Ok(())
     }
 
-    #[tauri::command]
-    pub fn launch_preset(app_handle: AppHandle, id: String) -> Result<Vec<String>, String> {
-        let presets = load_presets(app_handle.clone())?;
-        let preset = presets
-            .iter()
-            .find(|p| p.id == id)
-            .ok_or_else(|| format!("Preset with ID {} not found", id))?;
-
+    fn launch_items(app_handle: AppHandle, apps: Vec<AppEntry>, urls: Vec<String>) -> Vec<String> {
         let mut failed_items = Vec::new();
 
         // Launch Apps
-        for app in &preset.apps {
+        for app in apps {
             let result = if cfg!(target_os = "windows") {
                 use std::os::windows::process::CommandExt;
                 Command::new("cmd")
@@ -137,13 +144,29 @@ mod commands {
         }
 
         // Launch URLs
-        for url in &preset.urls {
-            if let Err(_) = app_handle.opener().open_url(url, None::<&str>) {
+        for url in urls {
+            if let Err(_) = app_handle.opener().open_url(&url, None::<&str>) {
                 failed_items.push(url.clone());
             }
         }
 
-        Ok(failed_items)
+        failed_items
+    }
+
+    #[tauri::command]
+    pub fn launch_preset(app_handle: AppHandle, id: String) -> Result<Vec<String>, String> {
+        let presets = load_presets(app_handle.clone())?;
+        let preset = presets
+            .iter()
+            .find(|p| p.id == id)
+            .ok_or_else(|| format!("Preset with ID {} not found", id))?;
+
+        Ok(launch_items(app_handle, preset.apps.clone(), preset.urls.clone()))
+    }
+
+    #[tauri::command]
+    pub fn launch_draft(app_handle: AppHandle, apps: Vec<AppEntry>, urls: Vec<String>) -> Vec<String> {
+        launch_items(app_handle, apps, urls)
     }
 
     #[tauri::command]
@@ -275,6 +298,75 @@ mod commands {
 
         apps
     }
+
+    #[tauri::command]
+    pub fn get_settings(app_handle: AppHandle) -> Result<serde_json::Value, String> {
+        let path = get_settings_path(&app_handle)?;
+        if !path.exists() {
+            return Ok(serde_json::json!({}));
+        }
+        let data = fs::read_to_string(path).map_err(|e| e.to_string())?;
+        let settings: serde_json::Value = serde_json::from_str(&data).unwrap_or(serde_json::json!({}));
+        Ok(settings)
+    }
+
+    #[tauri::command]
+    pub fn set_setting(app_handle: AppHandle, key: String, value: serde_json::Value) -> Result<(), String> {
+        let path = get_settings_path(&app_handle)?;
+        let mut settings = get_settings(app_handle.clone()).unwrap_or(serde_json::json!({}));
+        
+        if let Some(obj) = settings.as_object_mut() {
+            obj.insert(key, value);
+        } else {
+            let mut new_obj = serde_json::Map::new();
+            new_obj.insert(key, value);
+            settings = serde_json::Value::Object(new_obj);
+        }
+
+        let data = serde_json::to_string_pretty(&settings).map_err(|e| e.to_string())?;
+        fs::write(path, data).map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    #[tauri::command]
+    pub fn set_autostart(enabled: bool) -> Result<(), String> {
+        #[cfg(target_os = "windows")]
+        {
+            let run_key = RegKey::predef(HKEY_CURRENT_USER).open_subkey_with_flags(
+                "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+                KEY_READ | KEY_WRITE,
+            ).map_err(|e| format!("Failed to open registry key: {}", e))?;
+
+            let app_name = "Setur";
+
+            if enabled {
+                let exe_path = std::env::current_exe().map_err(|e| format!("Failed to get exe path: {}", e))?;
+                run_key.set_value(app_name, &exe_path.to_string_lossy().to_string())
+                    .map_err(|e| format!("Failed to set registry value: {}", e))?;
+            } else {
+                let _ = run_key.delete_value(app_name);
+            }
+        }
+        Ok(())
+    }
+
+    #[tauri::command]
+    pub fn get_autostart_enabled() -> Result<bool, String> {
+        #[cfg(target_os = "windows")]
+        {
+            let run_key = RegKey::predef(HKEY_CURRENT_USER).open_subkey_with_flags(
+                "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+                KEY_READ,
+            ).map_err(|e| format!("Failed to open registry key: {}", e))?;
+
+            let app_name = "Setur";
+            Ok(run_key.get_value::<String, _>(app_name).is_ok())
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            Ok(false)
+        }
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -343,32 +435,6 @@ pub fn run() {
                 let _ = boot_window.set_focus();
             }
 
-            #[cfg(target_os = "windows")]
-            {
-                let run_key = RegKey::predef(HKEY_CURRENT_USER).open_subkey_with_flags(
-                    "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
-                    KEY_READ | KEY_WRITE,
-                );
-
-                match run_key {
-                    Ok(key) => {
-                        let app_name = "Setur";
-                        if key.get_value::<String, _>(app_name).is_err() {
-                            if let Ok(exe_path) = std::env::current_exe() {
-                                if let Err(e) =
-                                    key.set_value(app_name, &exe_path.to_string_lossy().to_string())
-                                {
-                                    eprintln!("Failed to write autostart registry key: {}", e);
-                                }
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        eprintln!("Failed to open autostart registry key: {}", e);
-                    }
-                }
-            }
-
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -377,8 +443,13 @@ pub fn run() {
             commands::delete_preset,
             commands::reorder_presets,
             commands::launch_preset,
+            commands::launch_draft,
             commands::is_first_launch,
-            commands::get_installed_apps
+            commands::get_installed_apps,
+            commands::get_settings,
+            commands::set_setting,
+            commands::set_autostart,
+            commands::get_autostart_enabled
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
@@ -388,15 +459,10 @@ pub fn run() {
             }
             tauri::RunEvent::WindowEvent { label, event, .. } => {
                 if label == "main" {
-                    if let tauri::WindowEvent::CloseRequested { .. } = event {
-                        // Only quit if boot window is hidden or not visible
-                        let boot_visible = app_handle
-                            .get_webview_window("boot")
-                            .and_then(|w| w.is_visible().ok())
-                            .unwrap_or(false);
-
-                        if !boot_visible {
-                            std::process::exit(0);
+                    if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                        api.prevent_close();
+                        if let Some(win) = app_handle.get_webview_window("main") {
+                            let _ = win.hide();
                         }
                     }
                 }

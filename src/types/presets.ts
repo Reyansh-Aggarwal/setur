@@ -13,6 +13,7 @@ export interface Preset {
   id: string;
   name: string;
   icon?: string | null;
+  color?: string | null;
   apps: AppEntry[];
   urls: string[];
 }

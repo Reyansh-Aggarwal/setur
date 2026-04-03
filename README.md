@@ -65,7 +65,7 @@ No more context switching. No more forgetting what you opened yesterday.
 ### Installation
 
 1. **Download** the latest release from [Releases](https://github.com/yourusername/setur/releases)
-2. **Run** `Setur-Setup.exe` and follow the installer
+2. **Run** `setur_x.x.x_x64-setup.exe` and follow the installer
 3. **Reboot** your machine
 4. **Create presets** via the tray menu → "Manage Presets"
 
