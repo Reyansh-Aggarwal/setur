@@ -38,7 +38,6 @@ No more context switching. No more forgetting what you opened yesterday.
 
 🎯 **Smart Preset Creation**
 - Scan installed applications automatically
-- AI-assisted suggestions (powered by Claude/Gemini)
 - Define custom app and URL combinations
 - Save and organize unlimited presets
 
@@ -64,7 +63,7 @@ No more context switching. No more forgetting what you opened yesterday.
 
 ### Installation
 
-1. **Download** the latest release from [Releases](https://github.com/yourusername/setur/releases)
+1. **Download** the latest release from [Releases](https://github.com/Reyansh-Aggarwal/setur/releases)
 2. **Run** `setur_x.x.x_x64-setup.exe` and follow the installer
 3. **Reboot** your machine
 4. **Create presets** via the tray menu → "Manage Presets"
